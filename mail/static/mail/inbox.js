@@ -53,7 +53,10 @@ function send_email(){
   .then(result => {
       // Print result
       console.log(result);
-      const alerta = JSON.stringify(result);
-      alert(`${alerta}`);
+      const alerta = result["error"];
+      if (alerta != null){
+        alert(`blablabla${alerta}`);
+      }
+      
   });
 }
