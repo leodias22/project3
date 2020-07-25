@@ -123,7 +123,7 @@ function load_email(id){
   contents.innerHTML = email.body;
   document.querySelector('#email-list').append(contents);
 });
-  //Leonardo - Then tag the email as read (code also ofered)
+  //Leonardo - Then tag the email as read (code also offered)
   fetch('/emails/'+id, {
     method: 'PUT',
     body: JSON.stringify({
