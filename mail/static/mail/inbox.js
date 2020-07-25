@@ -17,10 +17,13 @@ function compose_email() {
 
   //Leonardo - Clear the list of emails
   document.querySelector('#email-list').innerHTML = null;
+  document.querySelector('#email-archive').innerHTML = null;
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
+  //Leonardo - hide the archive button
+  document.querySelector('#email-archive').style.display = 'none';
 
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
@@ -33,6 +36,8 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  //Leonardo - hide the archive button
+  document.querySelector('#email-archive').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -43,6 +48,7 @@ function load_mailbox(mailbox) {
     // Print emails
     console.log(emails);
     document.querySelector('#email-list').innerHTML = null;
+    document.querySelector('#email-archive').innerHTML = null;
     for (let index = 0; index < emails.length; index++) {
       var read = emails[index].read;
       if(read){
@@ -56,7 +62,7 @@ function load_mailbox(mailbox) {
       var div = document.createElement("div");
       div.className = "border border-grey justify-content-between list-group-item-action d-flex list-group-item"+color;
       div.innerHTML = '<h5 class="mb-1">'+ title + '</h5>'  + '<small>' + time +'</small>'+'<div>'+ by + '</div>';
-      div.addEventListener('click', () => load_email(emails[index].id));
+      div.addEventListener('click', () => load_email(emails[index].id, mailbox));
       document.querySelector('#email-list').append(div);
     }
     // ... do something else with emails ...
@@ -88,15 +94,15 @@ function send_email(){
         alert(`${alerta}`);
       }
       
-  });
-  document.addEventListener('submit', function(event){
+  })
+  .then(()=>{
     event.preventDefault();
-    setTimeout(load_mailbox('sent'), 8000);
-  });
+    load_mailbox('sent');
+  } );
 }
 
 //Leonardo - view single email
-function load_email(id){
+function load_email(id, mailbox){
 
   //Leonardo - 1st the offered code to get email contents
   fetch('/emails/'+id)
@@ -107,22 +113,60 @@ function load_email(id){
 
     // ... do something else with email ...
     //Leonardo - Finally, hide all elements and show the selected email contents
-  document.querySelector('#email-list').innerHTML = null;
-  document.querySelector('#emails-view').innerHTML = `<h3>${email.subject.charAt(0).toUpperCase() + email.subject.slice(1)}</h3>`;
-  var sent = document.createElement('div');
-  var receipt = document.createElement('div');
-  var time = document.createElement('div');
-  var contents = document.createElement('div');
-  sent.innerHTML = 'Sent by: '+email.sender;
-  document.querySelector('#email-list').append(sent);
-  receipt.innerHTML = 'Recipients: '+email.recipients;
-  document.querySelector('#email-list').append(receipt);
-  time.innerHTML = 'Sent on: '+email.timestamp;
-  document.querySelector('#email-list').append(time);
-  contents.className = "border border-dark"
-  contents.innerHTML = email.body;
-  document.querySelector('#email-list').append(contents);
-});
+    document.querySelector('#email-list').innerHTML = null;
+    document.querySelector('#email-archive').innerHTML = null;
+    document.querySelector('#emails-view').innerHTML = `<h3>${email.subject.charAt(0).toUpperCase() + email.subject.slice(1)}</h3>`;
+    var sent = document.createElement('div');
+    var receipt = document.createElement('div');
+    var time = document.createElement('div');
+    var contents = document.createElement('div');
+    sent.innerHTML = 'Sent by: '+email.sender;
+    document.querySelector('#email-list').append(sent);
+    receipt.innerHTML = 'Recipients: '+email.recipients;
+    document.querySelector('#email-list').append(receipt);
+    time.innerHTML = 'Sent on: '+email.timestamp;
+    document.querySelector('#email-list').append(time);
+    contents.className = "border border-dark"
+    contents.innerHTML = email.body;
+    document.querySelector('#email-list').append(contents);
+    //Leonardo - show the archive button
+    document.querySelector('#email-archive').style.display = 'block';
+
+    //Leonardo - Archive quality
+    var archive = document.createElement('button');
+    archive.className = "btn btn-primary btn-sm";
+    if(mailbox === 'inbox'){
+      archive.innerHTML = 'Archive';
+      archive.addEventListener('click', () => {
+        fetch('/emails/'+id, {
+          method: 'PUT',
+          body: JSON.stringify({
+              archived: true
+          })
+        })
+        .then(() =>{
+          load_mailbox('inbox')
+        });
+      });
+      document.querySelector('#email-archive').append(archive);
+      
+    } else if (mailbox === 'archive'){
+      archive.innerHTML = 'Unarchive';
+      archive.addEventListener('click', () => {
+        fetch('/emails/'+id, {
+          method: 'PUT',
+          body: JSON.stringify({
+              archived: false
+          })
+        })
+        .then(() =>{
+          load_mailbox('inbox')
+        });
+      });
+      document.querySelector('#email-archive').append(archive);
+    }
+    
+  });
   //Leonardo - Then tag the email as read (code also offered)
   fetch('/emails/'+id, {
     method: 'PUT',
