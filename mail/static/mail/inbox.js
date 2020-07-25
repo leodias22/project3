@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function compose_email() {
 
+  //Leonardo - Clear the list of emails
+  document.querySelector('#email-list').innerHTML = null;
+
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
@@ -33,10 +36,37 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  //Leonardo - Load emails
+    fetch('/emails/'+mailbox)
+    .then(response => response.json())
+    .then(emails => {
+    // Print emails
+    console.log(emails);
+    document.querySelector('#email-list').innerHTML = null;
+    for (let index = 0; index < emails.length; index++) {
+      var read = emails[index].read;
+      if(read){
+        color = '-secondary';
+      }else{
+        color = '-light';
+      }
+      var title = emails[index].subject;
+      var by = emails[index].sender;
+      var time = emails[index].timestamp;
+      var div = document.createElement("div");
+      div.className = "border border-grey justify-content-between list-group-item-action d-flex list-group-item"+color;
+      div.innerHTML = '<h5 class="mb-1">'+ title + '</h5>'  + '<small>' + time +'</small>'+'<div>'+ by + '</div>';
+      div.addEventListener('click', () => load_email(emails[index].id));
+      document.querySelector('#email-list').append(div);
+    }
+    // ... do something else with emails ...
+});
+
 }
 
 // Leonardo - Sends the email 
 function send_email(){
+  
   const recipients = document.querySelector('#compose-recipients').value;
   const subject = document.querySelector('#compose-subject').value;
   const body = document.querySelector('#compose-body').value;
@@ -55,8 +85,51 @@ function send_email(){
       console.log(result);
       const alerta = result["error"];
       if (alerta != null){
-        alert(`blablabla${alerta}`);
+        alert(`${alerta}`);
       }
       
   });
+  document.addEventListener('submit', function(event){
+    event.preventDefault();
+    setTimeout(load_mailbox('sent'), 8000);
+  });
+}
+
+//Leonardo - view single email
+function load_email(id){
+
+  //Leonardo - 1st the offered code to get email contents
+  fetch('/emails/'+id)
+  .then(response => response.json())
+  .then(email => {
+    // Print email
+      console.log(email);
+
+    // ... do something else with email ...
+    //Leonardo - Finally, hide all elements and show the selected email contents
+  document.querySelector('#email-list').innerHTML = null;
+  document.querySelector('#emails-view').innerHTML = `<h3>${email.subject.charAt(0).toUpperCase() + email.subject.slice(1)}</h3>`;
+  var sent = document.createElement('div');
+  var receipt = document.createElement('div');
+  var time = document.createElement('div');
+  var contents = document.createElement('div');
+  sent.innerHTML = 'Sent by: '+email.sender;
+  document.querySelector('#email-list').append(sent);
+  receipt.innerHTML = 'Recipients: '+email.recipients;
+  document.querySelector('#email-list').append(receipt);
+  time.innerHTML = 'Sent on: '+email.timestamp;
+  document.querySelector('#email-list').append(time);
+  contents.className = "border border-dark"
+  contents.innerHTML = email.body;
+  document.querySelector('#email-list').append(contents);
+});
+  //Leonardo - Then tag the email as read (code also ofered)
+  fetch('/emails/'+id, {
+    method: 'PUT',
+    body: JSON.stringify({
+        read: true
+    })
+  })
+
+  
 }
