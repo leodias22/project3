@@ -7,7 +7,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#compose').addEventListener('click', compose_email);
 
   // Leonardo - Sends email after filling the form
-  document.querySelector('#compose-form').addEventListener('submit', () => send_email());
+  document.querySelector('#compose-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    send_email();
+  });
 
   // By default, load the inbox
   load_mailbox('inbox');
@@ -29,6 +32,8 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+  
+  
 }
 
 function load_mailbox(mailbox) {
@@ -77,6 +82,8 @@ function send_email(){
   const subject = document.querySelector('#compose-subject').value;
   const body = document.querySelector('#compose-body').value;
 
+  
+
   fetch('/emails', {
     method: 'POST',
     body: JSON.stringify({
@@ -96,9 +103,8 @@ function send_email(){
       
   })
   .then(()=>{
-    event.preventDefault();
-    load_mailbox('sent');
-  } );
+    load_mailbox("sent")
+  })
 }
 
 //Leonardo - view single email
@@ -174,6 +180,6 @@ function load_email(id, mailbox){
         read: true
     })
   })
-
-  
 }
+
+
