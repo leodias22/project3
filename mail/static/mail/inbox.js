@@ -21,12 +21,14 @@ function compose_email() {
   //Leonardo - Clear the list of emails
   document.querySelector('#email-list').innerHTML = null;
   document.querySelector('#email-archive').innerHTML = null;
+  document.querySelector('#email-reply').innerHTML = null;
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
-  //Leonardo - hide the archive button
+  //Leonardo - hide the archive and reply button
   document.querySelector('#email-archive').style.display = 'none';
+  document.querySelector('#email-reply').style.display = 'none';
 
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
@@ -41,8 +43,9 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
-  //Leonardo - hide the archive button
+  //Leonardo - hide the archive and reply button
   document.querySelector('#email-archive').style.display = 'none';
+  document.querySelector('#email-reply').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -54,6 +57,8 @@ function load_mailbox(mailbox) {
     console.log(emails);
     document.querySelector('#email-list').innerHTML = null;
     document.querySelector('#email-archive').innerHTML = null;
+    document.querySelector('#email-reply').innerHTML = null;
+
     for (let index = 0; index < emails.length; index++) {
       var read = emails[index].read;
       if(read){
@@ -98,7 +103,7 @@ function send_email(){
       console.log(result);
       const alerta = result["error"];
       if (alerta != null){
-        alert(`${alerta}`);
+        alert(`reply${alerta}`);
       }
       
   })
@@ -121,6 +126,15 @@ function load_email(id, mailbox){
     //Leonardo - Finally, hide all elements and show the selected email contents
     document.querySelector('#email-list').innerHTML = null;
     document.querySelector('#email-archive').innerHTML = null;
+    document.querySelector('#email-reply').innerHTML = null;
+
+    //Leonardo - create and show a reply button
+    document.querySelector('#email-reply').style.display = 'block';
+    var replying = document.createElement('button');
+    replying.className = "btn btn-primary btn-sm";
+    replying.innerHTML = 'Reply';
+    document.querySelector('#email-reply').append(replying);
+
     document.querySelector('#emails-view').innerHTML = `<h3>${email.subject.charAt(0).toUpperCase() + email.subject.slice(1)}</h3>`;
     var sent = document.createElement('div');
     var receipt = document.createElement('div');
@@ -180,6 +194,9 @@ function load_email(id, mailbox){
         read: true
     })
   })
+
+  
+
 }
 
 
