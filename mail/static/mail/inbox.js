@@ -133,6 +133,9 @@ function load_email(id, mailbox){
     var replying = document.createElement('button');
     replying.className = "btn btn-primary btn-sm";
     replying.innerHTML = 'Reply';
+    replying.addEventListener('click', ()=>{
+      reply(email.sender, email.subject, email.timestamp, email.body);
+    });
     document.querySelector('#email-reply').append(replying);
 
     document.querySelector('#emails-view').innerHTML = `<h3>${email.subject.charAt(0).toUpperCase() + email.subject.slice(1)}</h3>`;
@@ -147,7 +150,7 @@ function load_email(id, mailbox){
     time.innerHTML = 'Sent on: '+email.timestamp;
     document.querySelector('#email-list').append(time);
     contents.className = "border border-dark"
-    contents.innerHTML = email.body;
+    contents.innerHTML = (`${email.body}`);
     document.querySelector('#email-list').append(contents);
     //Leonardo - show the archive button
     document.querySelector('#email-archive').style.display = 'block';
@@ -194,9 +197,17 @@ function load_email(id, mailbox){
         read: true
     })
   })
+}
 
-  
-
+function reply (sender, subject, time, body){
+  compose_email();
+  document.querySelector('#compose-recipients').value = sender;
+  if(subject[0]==='R' && subject[1]==='e' && subject[2]===':'){
+    document.querySelector('#compose-subject').value = subject;
+  }else{
+    document.querySelector('#compose-subject').value = 'Re: '+subject;
+  }
+  document.querySelector('#compose-body').value = 'On '+time+' '+sender+' wrote: '+body;
 }
 
 
