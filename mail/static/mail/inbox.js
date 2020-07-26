@@ -149,8 +149,7 @@ function load_email(id, mailbox){
     document.querySelector('#email-list').append(receipt);
     time.innerHTML = 'Sent on: '+email.timestamp;
     document.querySelector('#email-list').append(time);
-    contents.className = "border border-dark"
-    contents.innerHTML = (`${email.body}`);
+    contents.innerHTML = (`<textarea placeholder="${email.body}" readonly></textarea>`);
     document.querySelector('#email-list').append(contents);
     //Leonardo - show the archive button
     document.querySelector('#email-archive').style.display = 'block';
